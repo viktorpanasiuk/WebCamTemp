@@ -66,14 +66,6 @@ uint8_t initSequence(void);
 ***************/
 
 /*
-* Search ROM command
-* Searching of all existing 1-Wire devices
-* @param nothing
-* @return nothing
-*/
-void searchROM(void);
-
-/*
 * Read ROM command
 * Reading the ROM of the lonely 1-Wire device
 * @param ROM_T * pointer to value in which ROM will be saved 
@@ -118,7 +110,7 @@ void alarmSearch(void);
 void convertTemperature(void);
 
 /*
-* Read scratchpad command
+* Read scratch pad command
 * Reading of the current content of DS18B20
 * @param nothing
 * @return nothing
@@ -126,7 +118,7 @@ void convertTemperature(void);
 void writeScratchpad(EEPROM_T * EEPROM);
 
 /*
-* Read scratchpad command
+* Read scratch pad command
 * Reading of the current content of DS18B20
 * @param SCRATCHPAD_T * pointer to structure, where the data will be saved
 * @return SCRATCHPAD_T * pointer to the structure
@@ -134,7 +126,7 @@ void writeScratchpad(EEPROM_T * EEPROM);
 SCRATCHPAD_T * readScratchpad(SCRATCHPAD_T * Scratchpad);
 
 /*
-* Copy scratchpad command
+* Copy scratch pad command
 * Saving of the part of scratch pad to DS18B20 EEPROM
 * @param nothing
 * @return nothing
@@ -156,6 +148,10 @@ void recallE2(void);
 * @return uint8_t state
 */
 uint8_t readPowerSupply(void);
+
+/********************
+*       UTILS       *
+********************/
 
 /*
 * Check is the CRC is valid?

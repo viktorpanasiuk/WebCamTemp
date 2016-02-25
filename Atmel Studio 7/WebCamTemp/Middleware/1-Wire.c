@@ -16,11 +16,41 @@
 #define READ_INITIALIZE			SLOT_INIT_DURATION
 #define MASTER_READ_SAMPLE		14	// uS
 
+/* Reset and presence pulse
+*
+*          RESET_PULSE_DURATION           PRESENCE_PULSE_DURATION
+*      |<----------------------->|      |<----------------------->|
+*  ----                             ----                       ------
+*      |                           /    |                     /
+*      |__________________________/     |____________________/
+*             ------------------------->|---|<- |   |   |   |
+*              PRESENCE_PULSE_CHECKING    0   1   2  ... 
+*/
 
-/*
-*  ----       ----------------
-*      |     /                |
-*      |____/                 |__
+/* Write slots
+*
+*                           PAUSE_BETWEEN_SLOTS
+*           TIME_SLOT_DURATION       |       TIME_SLOT_DURATION
+*      |<----------------------->|<---->|<----------------------->|
+*  ----                             ----        ------------------
+*      |    WRITE 0 SLOT           /    |      /  WRITE 1 SLOT    |
+*      |__________________________/     |_____/                   |__
+*      |<----------------------->|      |<--->|
+*             WRITE_0_DURATION       WRITE_1_DURATION
+*/
+
+/* Read slots
+*
+*                           PAUSE_BETWEEN_SLOTS
+*           TIME_SLOT_DURATION       |       TIME_SLOT_DURATION
+*      |<----------------------->|<---->|<----------------------->|
+*  ----                 ----------------          ----------------
+*      |  READ 0 SLOT  /                |        /  READ 1 SLOT   |
+*      |______________/                 |_______/                 |__
+*      |<--->|      |                   |<--->|      |
+*  READ_INITIALIZE  |               READ_INITIALIZE  |
+*      |<---------->|                   |<---------->|
+*    MASTER_READ_SAMPLE               MASTER_READ_SAMPLE
 */
 
 #include "1-Wire.h"
@@ -28,6 +58,11 @@
 #include <util/delay.h>
 #include <util/atomic.h>
 
+/*
+* Issuing of the write 0 slot
+* @param nothing
+* @return nothing
+*/
 static void write0Slot(void)
 {
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
@@ -42,6 +77,11 @@ static void write0Slot(void)
 	}
 }
 
+/*
+* Issuing of the write 1 slot
+* @param nothing
+* @return nothing
+*/
 static void write1Slot(void)
 {
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
@@ -56,6 +96,11 @@ static void write1Slot(void)
 	}
 }
 
+/*
+* Implementation of the read slot
+* @param nothing
+* @return uint8_t state of DQ
+*/
 static uint8_t readSlot(void)
 {
 	uint8_t state; /* State of DQ pin*/
@@ -74,6 +119,7 @@ static uint8_t readSlot(void)
 	return state; /* Return state of DQ */
 }
 
+/* Wait until 1-wire device is in progress */
 void waitUnill1WireDeviceIsInProgress(void)
 {
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
@@ -83,6 +129,7 @@ void waitUnill1WireDeviceIsInProgress(void)
 	}
 }
 
+/* Issuing of the reset pulse */
 void resetPulse(void)
 {
 	ATOMIC_BLOCK(ATOMIC_FORCEON)
@@ -95,6 +142,7 @@ void resetPulse(void)
 	}
 }
 
+/* Checking for appearance of presence pulse */
 uint8_t presencePulse(void)
 {
 	uint8_t state = 0; /* The default state is 0 */
@@ -111,6 +159,7 @@ uint8_t presencePulse(void)
 	return state; /* Return the state */
 }
 
+/* Sending one byte to 1-Wire device */
 void sendByteTo1Wire(uint8_t byte)
 {
 	uint8_t bit = 1; /* LSB bit is set */
@@ -124,6 +173,7 @@ void sendByteTo1Wire(uint8_t byte)
 	}
 }
 
+/* Reading the one byte from 1-Wire interface */
 uint8_t readByteFrom1Wire(void)
 {
 	uint8_t byte = 0; /* Definition of returned value */

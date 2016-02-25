@@ -10,6 +10,7 @@
 #include "DS18B20.h"
 #include "UART.h"
 
+/* Read ROM address of the DS18B20 and send it to UART */
 void sendROMToUART(void)
 {
 	/* Definition a local variable for ROM */
@@ -23,6 +24,7 @@ void sendROMToUART(void)
 	sendDataToUART((uint8_t *)&ROM, sizeof(ROM_T));
 }
 
+/* Read temperature from DS18B20 and send it to UART */
 void sendTemperatureToUART(ROM_T ROM[], uint8_t nDevices)
 {	
 	if (!initSequence()) /* Initialization sequence for DS18B20 */
@@ -32,12 +34,12 @@ void sendTemperatureToUART(ROM_T ROM[], uint8_t nDevices)
 	
 	while (nDevices--) /* For each device */
 	{
-		SCRATCHPAD_T Scratchpad; /* Variable for scratchpad */
+		SCRATCHPAD_T Scratchpad; /* Variable for scratch pad */
 				
 		if (!initSequence()) /* Initialization sequence for DS18B20 */
 			return; /* If presence pulse is absent - return */
 		matchROM(ROM++); /* Match ROM command */
-		readScratchpad(&Scratchpad); /* Read scratchpad command */
+		readScratchpad(&Scratchpad); /* Read scratch pad command */
 		
 		if (isValidCRC(&Scratchpad))
 		{
@@ -52,20 +54,21 @@ void sendTemperatureToUART(ROM_T ROM[], uint8_t nDevices)
 	}
 }
 
+/* Initialization of the appropriate DS18B20 by specific resolution value */
 void initDS18B20(ROM_T *ROM, RESOLUTION_T Resolution)
 {
-	SCRATCHPAD_T Scratchpad; /* Local variable for scratchpad data */
+	SCRATCHPAD_T Scratchpad; /* Local variable for scratch pad data */
 	EEPROM_T *EEPROM = (EEPROM_T *)&Scratchpad.THRegister; /* Pointer to EEPROM data */
 	
 	if (!initSequence()) /* Initialization sequence for DS18B20 */
 		return; /* If presence pulse is absent - return */
 	matchROM(ROM); /* Match ROM command */
-	readScratchpad(&Scratchpad); /* Read scratchpad data from DS18B20 */
+	readScratchpad(&Scratchpad); /* Read scratch pad data from DS18B20 */
 	
 	Scratchpad.ConfigurationRegister = Resolution; /* Set configuration register */
 	
 	if (!initSequence()) /* Initialization sequence for DS18B20 */
 		return; /* If presence pulse is absent - return */
 	matchROM(ROM); /* Match ROM command */
-	writeScratchpad(EEPROM); /* Write scratchpad command */
+	writeScratchpad(EEPROM); /* Write scratch pad command */
 }

@@ -16,14 +16,14 @@
 #define WRITE_SCRATCHPAD	0x4E
 #define READ_SCRATCHPAD		0xBE
 
-const uint8_t DEVICE_ID = 0x28;
-
+/* Providing of initialize sequence for DS18B20 */
 uint8_t initSequence(void)
 {	
 	resetPulse(); /* Issue the reset pulse */
 	return presencePulse(); /* Check for presence pulse */
 }
 
+/* Read ROM command */
 ROM_T * readROM(ROM_T *ROM)
 {
 	uint8_t n = sizeof(ROM_T) / sizeof(uint8_t); /* How much bytes we need to read */
@@ -34,6 +34,7 @@ ROM_T * readROM(ROM_T *ROM)
 	return ROM; /* Return pointer to ROM */
 }
 
+/* Match ROM command */
 void matchROM(ROM_T *ROM)
 {
 	uint8_t n = sizeof(ROM_T) / sizeof(uint8_t); /* How much bytes we need to send */
@@ -43,17 +44,20 @@ void matchROM(ROM_T *ROM)
 		sendByteTo1Wire(((uint8_t *)ROM)[n]); /* Send it value to DS18B20 */
 }
 
+/* Skip ROM command */
 void skipROM(void)
 {
 	sendByteTo1Wire(SKIP_ROM); /* Send appropriate command */
 }
 
+/* Convert T command */
 void convertTemperature(void)
 {
 	sendByteTo1Wire(CONVERT_T); /* Send appropriate command */
-	waitUnill1WireDeviceIsInProgress();
+	waitUnill1WireDeviceIsInProgress(); /* Wait until converting temperature will be done */
 }
 
+/* Write scratch pad command */
 void writeScratchpad(EEPROM_T * EEPROM)
 {
 	uint8_t *p = (uint8_t *)EEPROM; /* Cast EEPROM pointer */
@@ -64,21 +68,23 @@ void writeScratchpad(EEPROM_T * EEPROM)
 		sendByteTo1Wire(*p++); /* Write data to DS18B20 */
 }
 
+/* Read scratch pad command */
 SCRATCHPAD_T * readScratchpad(SCRATCHPAD_T * Scratchpad)
 {
-	uint8_t *p = (uint8_t *)Scratchpad; /* Cast scratchpad pointer */
+	uint8_t *p = (uint8_t *)Scratchpad; /* Cast scratch pad pointer */
 	uint8_t n = sizeof(SCRATCHPAD_T) / sizeof(uint8_t); /* How much bytes we need to read */
 	
 	sendByteTo1Wire(READ_SCRATCHPAD); /* Send appropriate command */
-	while (n--) /* For each byte in scratchpad */
+	while (n--) /* For each byte in scratch pad */
 		*p++ = readByteFrom1Wire(); /* Save the data from DS18B20 */
-	return Scratchpad; /* Return pointer to scratchpad */
+	return Scratchpad; /* Return pointer to scratch pad */
 }
 
+/* CRC validation */
 uint8_t isValidCRC(SCRATCHPAD_T *Scratchpad)
 {
-	uint8_t n = sizeof(SCRATCHPAD_T) / sizeof(uint8_t); /* Bytes in scratchpad */
-	uint8_t *p = (uint8_t *)Scratchpad; /* Cast scratchpad pointer to uint8_t */
+	uint8_t n = sizeof(SCRATCHPAD_T) / sizeof(uint8_t); /* Bytes in scratch pad */
+	uint8_t *p = (uint8_t *)Scratchpad; /* Cast scratch pad pointer to uint8_t */
 	uint8_t crc = 0; /* Initial value for CRC */
 	/* For each byte in scratchpad except the last one */
 	for (uint8_t i = 0; i < (n-1); i++)
